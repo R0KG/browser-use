@@ -4,6 +4,7 @@ from PyPDF2 import PdfReader
 import logging
 from browser_use import ActionResult, Controller
 from job_finder.models import Job
+from browser_use.browser.context import BrowserContext
 
 logger = logging.getLogger(__name__)
 controller = Controller()
@@ -31,7 +32,7 @@ def read_jobs():
         return f.read()
 
 
-@controller.action("Read my cv for context to fill forms")
+@controller.action("Read CV")
 def read_cv():
     pdf = PdfReader(CV)
     text = ""
@@ -45,7 +46,7 @@ def read_cv():
     "Upload cv to element - call this function to upload if element is not found, try with different index of the same upload element",
     requires_browser=True,
 )
-async def upload_cv(index: int, browser):
+async def upload_cv(index: int, browser: BrowserContext):
     path = str(CV.absolute())
     dom_el = await browser.get_dom_element_by_index(index)
     if dom_el is None:
@@ -66,3 +67,11 @@ async def upload_cv(index: int, browser):
     except Exception as e:
         logger.debug(f"Error in set_input_files: {str(e)}")
         return ActionResult(error=f"Failed to upload file to index {index}")
+
+
+@controller.action("Save user email and job email to file")
+def save_user_email(user_email: str, job_email: str):
+    with open("user_email.txt", "w") as f:
+        writer = csv.writer(f)
+        writer.writerow([user_email, job_email])
+    return ActionResult(extracted_content="Saved user email and job email to file")

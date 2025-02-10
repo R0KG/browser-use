@@ -3,19 +3,45 @@ import asyncio
 from pathlib import Path
 from browser_use.browser.browser import Browser, BrowserConfig
 from pydantic import SecretStr
-from job_finder.actions import controller
-from job_finder.models import Job
+from browser_use import ActionResult, Agent, Controller
 import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
+controller = Controller()
+
+
 async def main():
     ground_task = (
-        "You are a professional job finder. "
-        "1. Read my cv with read_cv"
-        "find job according to my cv and save them to a file"
-        "search at linkedin and karriere.at:"
+        "You are a professional job finder and application assistant. Follow these steps precisely:\n"
+        "1. Initial Setup:\n"
+        "   - FIRST ACTION: Call the read_cv() function to read my CV\n"
+        "   - Store the returned CV content in memory for form filling\n"
+        "2. Search Jobs on These Platforms (in order):\n"
+        "   a) karriere.at (Fast application)\n"
+        "   b) LinkedIn (Fast application)\n"
+        "   c) jobs.ams.at/public/emps (Austrian website)\n"
+        "   d) stepstone.at (as guest, slower platform)\n"
+        "3. For Each Job Posting:\n"
+        "   - Extract and evaluate job details\n"
+        "   - Save promising positions using save_jobs function\n"
+        "   - Check application method:\n"
+        "     * If direct form: Fill and submit application\n"
+        "     * If email application: Stop and report with format:\n"
+        "       - User email: [extracted]\n"
+        "       - Apply to email: [company_email]\n"
+        "       - Application file needed: [yes/no]\n"
+        "       - Save user email and job email to file\n"
+        "4. Keep Track:\n"
+        "   - Maintain count of jobs processed in memory\n"
+        "   - Record which platforms were searched\n"
+        "   - Note any failed attempts or errors\n"
+        "5. Important Rules:\n"
+        "   - Always verify if links are working before processing\n"
+        "   - Check for both application methods (form/email) on each posting\n"
+        "   - Do not submit duplicate applications\n"
+        "   - Save all relevant job details before applying\n"
     )
     tasks = [
         ground_task + "\n" + "Google",
